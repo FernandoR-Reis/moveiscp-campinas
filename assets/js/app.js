@@ -224,11 +224,11 @@ function doLogout() {
   goTo('home');
 }
 
-function adminTab(tab) {
+function adminTab(tab, el) {
   document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('admin-' + tab)?.classList.add('active');
-  if (event?.currentTarget) event.currentTarget.classList.add('active');
+  if (el) el.classList.add('active');
   if (tab === 'produtos') renderAdminProducts();
   if (tab === 'categorias') renderAdminCats();
   if (tab === 'dashboard') renderAdminDashboard();
@@ -436,8 +436,12 @@ function saveCat() {
   const icon = document.getElementById('cm-icon').value || '🗂️';
   if (editingCatId) {
     const idx = categories.findIndex(c => c.id === editingCatId);
+    const previousName = categories[idx].name;
     categories[idx].name = name;
     categories[idx].icon = icon;
+    products.forEach(p => {
+      if (p.cat === previousName) p.cat = name;
+    });
     showToast('Categoria atualizada!', 'success');
   } else {
     categories.push({ id: Date.now(), name, icon });
