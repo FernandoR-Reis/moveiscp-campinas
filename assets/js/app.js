@@ -1,135 +1,199 @@
-let currentProduct = null;
-let editingProductId = null;
-let editingCatId = null;
-let adminLoggedIn = localStorage.getItem('mcp_admin') === '1';
+const state = {
+  categories: [],
+  products: [],
+  currentProduct: null,
+  editingProductId: null,
+  editingCatId: null,
+  adminLoggedIn: localStorage.getItem(APP_CONFIG.localStorageKeys.adminDemoSession) === '1',
+};
+
+const $ = (id) => document.getElementById(id);
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeColor(value) {
+  const color = String(value || '').trim();
+  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color) ? color : '#CCCCCC';
+}
+
+function cloneItems(items) {
+  return JSON.parse(JSON.stringify(items));
+}
 
 function saveData() {
-  localStorage.setItem('mcp_cats', JSON.stringify(categories));
-  localStorage.setItem('mcp_prods', JSON.stringify(products));
+  localStorage.setItem(APP_CONFIG.localStorageKeys.categories, JSON.stringify(state.categories));
+  localStorage.setItem(APP_CONFIG.localStorageKeys.products, JSON.stringify(state.products));
+}
+
+function loadData() {
+  const storedCategories = JSON.parse(localStorage.getItem(APP_CONFIG.localStorageKeys.categories) || 'null');
+  const storedProducts = JSON.parse(localStorage.getItem(APP_CONFIG.localStorageKeys.products) || 'null');
+  state.categories = Array.isArray(storedCategories) ? storedCategories : cloneItems(INITIAL_CATEGORIES);
+  state.products = Array.isArray(storedProducts) ? storedProducts : cloneItems(INITIAL_PRODUCTS);
+}
+
+function setMobileMenu(open) {
+  const menu = $('mobileMenu');
+  const btn = $('mobileBtn');
+  if (!menu || !btn) return;
+  menu.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function toggleMobileMenu() {
+  const menu = $('mobileMenu');
+  if (!menu) return;
+  setMobileMenu(!menu.classList.contains('open'));
+}
+
+function closeMobileMenu() {
+  setMobileMenu(false);
 }
 
 function goTo(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach((p) => p.classList.remove('active'));
   const showNavbar = !['admin-login', 'admin'].includes(page);
-  const navbar = document.getElementById('navbar');
+  const navbar = $('navbar');
   if (navbar) navbar.style.display = showNavbar ? '' : 'none';
 
   if (page === 'home') {
-    document.getElementById('page-home').classList.add('active');
+    $('page-home')?.classList.add('active');
     renderHomeCategories();
     renderFeaturedProducts();
   } else if (page === 'catalog') {
-    document.getElementById('page-catalog').classList.add('active');
+    $('page-catalog')?.classList.add('active');
     initCatalogFilters();
     renderCatalog();
   } else if (page === 'product') {
-    document.getElementById('page-product').classList.add('active');
+    $('page-product')?.classList.add('active');
     renderProductDetail();
   } else if (page === 'admin-login') {
-    document.getElementById('page-admin-login').classList.add('active');
-    if (adminLoggedIn) { goTo('admin'); return; }
+    $('page-admin-login')?.classList.add('active');
+    if (state.adminLoggedIn) {
+      goTo('admin');
+      return;
+    }
   } else if (page === 'admin') {
-    if (!adminLoggedIn) { goTo('admin-login'); return; }
-    document.getElementById('page-admin').classList.add('active');
+    if (!state.adminLoggedIn) {
+      goTo('admin-login');
+      return;
+    }
+    $('page-admin')?.classList.add('active');
     renderAdminDashboard();
     renderAdminProducts();
     renderAdminCats();
     populatePmCat();
   }
+
+  closeMobileMenu();
   window.scrollTo(0, 0);
 }
 
 function scrollToSection(id) {
   const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
-  else goTo('home');
-}
-
-window.addEventListener('scroll', () => {
-  const navbar = document.getElementById('navbar');
-  if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 40);
-});
-
-function toggleMobileMenu() {
-  document.getElementById('mobileMenu')?.classList.toggle('open');
-}
-
-function closeMobileMenu() {
-  document.getElementById('mobileMenu')?.classList.remove('open');
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    goTo('home');
+  }
 }
 
 function openWhatsApp(productName) {
-  const msg = productName
+  const message = productName
     ? `Olá, gostaria de orçamento do produto: *${productName}*`
     : 'Olá, gostaria de informações e orçamento sobre os móveis disponíveis.';
-  window.open(`https://wa.me/${WPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  window.open(`https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+}
+
+function getProductById(id) {
+  return state.products.find((p) => p.id === Number(id));
 }
 
 function renderHomeCategories() {
-  const el = document.getElementById('categoriesHome');
+  const el = $('categoriesHome');
   if (!el) return;
-  el.innerHTML = categories.map(c => `
-    <div class="cat-card" onclick="filterCatalog('${c.name}')">
-      <div class="cat-icon">${c.icon}</div>
-      <div class="cat-name">${c.name}</div>
-    </div>
-  `).join('');
+  el.innerHTML = state.categories
+    .map(
+      (c) => `
+      <button class="cat-card" type="button" data-filter-category="${escapeHtml(c.name)}" aria-label="Ver categoria ${escapeHtml(c.name)}">
+        <div class="cat-icon" aria-hidden="true">${escapeHtml(c.icon)}</div>
+        <div class="cat-name">${escapeHtml(c.name)}</div>
+      </button>
+    `,
+    )
+    .join('');
 }
 
-function productCardHTML(p) {
-  const badge = p.promo ? '<span class="product-card-badge badge-promo">Promoção</span>'
-    : p.novo ? '<span class="product-card-badge badge-new">Lançamento</span>'
-    : p.destaque ? '<span class="product-card-badge badge-dest">Destaque</span>' : '';
-  const availText = p.disponivel ? '' : '<div style="position:absolute;inset:0;background:rgba(250,248,245,0.6);display:flex;align-items:center;justify-content:center;"><span style="background:var(--dark);color:white;padding:6px 14px;border-radius:50px;font-size:0.75rem;font-weight:600;">Fora de estoque</span></div>';
+function getProductBadgeMarkup(product) {
+  if (product.promo) return '<span class="product-card-badge badge-promo">Promoção</span>';
+  if (product.novo) return '<span class="product-card-badge badge-new">Lançamento</span>';
+  if (product.destaque) return '<span class="product-card-badge badge-dest">Destaque</span>';
+  return '';
+}
+
+function productCardHTML(product) {
+  const badge = getProductBadgeMarkup(product);
+  const unavailableOverlay = product.disponivel
+    ? ''
+    : '<div class="product-overlay-stock"><span class="product-overlay-stock-text">Fora de estoque</span></div>';
+
   return `
-  <div class="product-card" onclick="openProduct(${p.id})">
-    <div class="product-card-img">
-      <div style="font-size:3rem;opacity:0.18;">🪑</div>
-      ${badge}
-      ${availText}
-    </div>
-    <div class="product-card-body">
-      <div class="product-card-cat">${p.cat}</div>
-      <div class="product-card-name">${p.name}</div>
-      <div class="product-card-code">Cód: ${p.code}</div>
-      <div class="product-card-actions">
-        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openProduct(${p.id})">Ver detalhes</button>
-        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openWhatsApp('${p.name}')">💬 Orçamento</button>
+    <article class="product-card" data-open-product-id="${product.id}" tabindex="0" role="button" aria-label="Ver detalhes de ${escapeHtml(product.name)}">
+      <div class="product-card-img">
+        <div style="font-size:3rem;opacity:0.18;" aria-hidden="true">🪑</div>
+        ${badge}
+        ${unavailableOverlay}
       </div>
-    </div>
-  </div>`;
+      <div class="product-card-body">
+        <div class="product-card-cat">${escapeHtml(product.cat)}</div>
+        <div class="product-card-name">${escapeHtml(product.name)}</div>
+        <div class="product-card-code">Cód: ${escapeHtml(product.code)}</div>
+        <div class="product-card-actions">
+          <button class="btn btn-outline btn-sm" type="button" data-action="open-product" data-product-id="${product.id}">Ver detalhes</button>
+          <button class="btn btn-primary btn-sm" type="button" data-action="open-whatsapp-product" data-product-id="${product.id}">💬 Orçamento</button>
+        </div>
+      </div>
+    </article>`;
 }
 
 function renderFeaturedProducts() {
-  const featured = products.filter(p => p.destaque && p.disponivel).slice(0, 4);
-  const el = document.getElementById('featuredProducts');
+  const featured = state.products.filter((p) => p.destaque && p.disponivel).slice(0, 4);
+  const el = $('featuredProducts');
   if (!el) return;
-  el.innerHTML = featured.map(p => productCardHTML(p)).join('');
+  el.innerHTML = featured.map((p) => productCardHTML(p)).join('');
 }
 
 function initCatalogFilters() {
-  const sel = document.getElementById('filterCat');
+  const sel = $('filterCat');
   if (!sel) return;
-  sel.innerHTML = '<option value="">Todas as categorias</option>' +
-    categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  sel.innerHTML =
+    '<option value="">Todas as categorias</option>' +
+    state.categories.map((c) => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
 }
 
 function filterCatalog(catName) {
   goTo('catalog');
   setTimeout(() => {
-    const sel = document.getElementById('filterCat');
+    const sel = $('filterCat');
     if (sel) sel.value = catName;
     renderCatalog();
   }, 50);
 }
 
 function renderCatalog() {
-  const q = (document.getElementById('catalogSearch')?.value || '').toLowerCase();
-  const cat = document.getElementById('filterCat')?.value || '';
-  const mat = document.getElementById('filterMat')?.value || '';
-  const disp = document.getElementById('filterDisp')?.value || '';
+  const q = (($('catalogSearch')?.value || '').trim()).toLowerCase();
+  const cat = $('filterCat')?.value || '';
+  const mat = $('filterMat')?.value || '';
+  const disp = $('filterDisp')?.value || '';
 
-  const filtered = products.filter(p => {
+  const filtered = state.products.filter((p) => {
     if (q && !p.name.toLowerCase().includes(q) && !p.code.toLowerCase().includes(q)) return false;
     if (cat && p.cat !== cat) return false;
     if (mat && p.mat !== mat) return false;
@@ -138,96 +202,157 @@ function renderCatalog() {
     return true;
   });
 
-  const info = document.getElementById('catalogInfo');
-  if (info) info.textContent = `${filtered.length} produto${filtered.length !== 1 ? 's' : ''} encontrado${filtered.length !== 1 ? 's' : ''}`;
+  const info = $('catalogInfo');
+  if (info) {
+    const suffix = filtered.length !== 1 ? 's' : '';
+    info.textContent = `${filtered.length} produto${suffix} encontrado${suffix}`;
+  }
 
-  const grid = document.getElementById('catalogGrid');
+  const grid = $('catalogGrid');
   if (!grid) return;
-  if (filtered.length === 0) {
-    grid.innerHTML = `<div class="no-results" style="grid-column:1/-1;"><div class="no-results-icon">🔍</div><p style="font-size:1rem;font-weight:600;color:var(--dark);margin-bottom:6px;">Nenhum produto encontrado</p><p style="font-size:0.875rem;">Tente alterar os filtros ou buscar por outros termos.</p></div>`;
+
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="no-results" style="grid-column:1/-1;">
+        <div class="no-results-icon" aria-hidden="true">🔍</div>
+        <p style="font-size:1rem;font-weight:600;color:var(--dark);margin-bottom:6px;">Nenhum produto encontrado</p>
+        <p style="font-size:0.875rem;">Tente alterar os filtros ou buscar por outros termos.</p>
+      </div>`;
     return;
   }
-  grid.innerHTML = filtered.map(p => productCardHTML(p)).join('');
+
+  grid.innerHTML = filtered.map((p) => productCardHTML(p)).join('');
 }
 
 function openProduct(id) {
-  currentProduct = products.find(p => p.id === id);
-  if (!currentProduct) return;
+  state.currentProduct = getProductById(id);
+  if (!state.currentProduct) return;
   goTo('product');
 }
 
 function renderProductDetail() {
-  if (!currentProduct) return;
-  const p = currentProduct;
-  document.getElementById('breadcrumb-product').textContent = p.name;
+  if (!state.currentProduct) return;
+  const p = state.currentProduct;
+  $('breadcrumb-product').textContent = p.name;
 
-  const colors = (p.cores || []).map((c, i) => `<div class="color-dot${i === 0 ? ' active' : ''}" style="background:${c}" title="${c}" onclick="this.parentElement.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));this.classList.add('active')"></div>`).join('');
+  const colors = (Array.isArray(p.cores) ? p.cores : [])
+    .map((color, index) => {
+      const safeColor = sanitizeColor(color);
+      const isActive = index === 0 ? ' active' : '';
+      return `<button class="color-dot${isActive}" type="button" style="background:${safeColor}" title="Cor ${safeColor}" data-action="select-color" aria-label="Selecionar cor ${safeColor}"></button>`;
+    })
+    .join('');
+
   const availClass = p.disponivel ? 'avail-yes' : 'avail-no';
   const availText = p.disponivel ? '✅ Disponível' : '❌ Fora de estoque';
 
-  document.getElementById('productInfo').innerHTML = `
-    <div class="product-detail-cat">${p.cat}</div>
-    <h1 class="product-detail-name">${p.name}</h1>
-    <div class="product-detail-code">Código: ${p.code}</div>
+  $('productInfo').innerHTML = `
+    <div class="product-detail-cat">${escapeHtml(p.cat)}</div>
+    <h1 class="product-detail-name">${escapeHtml(p.name)}</h1>
+    <div class="product-detail-code">Código: ${escapeHtml(p.code)}</div>
     <span class="product-avail ${availClass}"><span class="avail-dot"></span>${availText}</span>
-    <p class="product-detail-desc" style="margin-top:16px;">${p.desc}</p>
+    <p class="product-detail-desc" style="margin-top:16px;">${escapeHtml(p.desc)}</p>
     <div class="product-specs">
       <div class="product-specs-title">Especificações</div>
       <div class="specs-grid">
-        <div class="spec-item"><div class="spec-label">Medidas</div><div class="spec-value">${p.med || '—'}</div></div>
-        <div class="spec-item"><div class="spec-label">Material</div><div class="spec-value">${p.mat || '—'}</div></div>
-        <div class="spec-item"><div class="spec-label">Acabamento</div><div class="spec-value">${p.acab || '—'}</div></div>
-        <div class="spec-item"><div class="spec-label">Categoria</div><div class="spec-value">${p.cat}</div></div>
+        <div class="spec-item"><div class="spec-label">Medidas</div><div class="spec-value">${escapeHtml(p.med || '—')}</div></div>
+        <div class="spec-item"><div class="spec-label">Material</div><div class="spec-value">${escapeHtml(p.mat || '—')}</div></div>
+        <div class="spec-item"><div class="spec-label">Acabamento</div><div class="spec-value">${escapeHtml(p.acab || '—')}</div></div>
+        <div class="spec-item"><div class="spec-label">Categoria</div><div class="spec-value">${escapeHtml(p.cat)}</div></div>
       </div>
     </div>
     ${colors ? `<div class="product-colors"><div class="product-colors-title">Cores disponíveis</div><div class="colors-list">${colors}</div></div>` : ''}
     <div class="product-actions">
-      <button class="btn btn-wpp btn-full btn-lg" onclick="openWhatsApp('${p.name}')">💬 Solicitar Orçamento via WhatsApp</button>
-      <button class="btn btn-outline btn-full" onclick="document.querySelector('.orcamento-form').scrollIntoView({behavior:'smooth'})">📋 Preencher Formulário</button>
+      <button class="btn btn-wpp btn-full btn-lg" type="button" data-action="open-whatsapp-product" data-product-id="${p.id}">💬 Solicitar Orçamento via WhatsApp</button>
+      <button class="btn btn-outline btn-full" type="button" data-action="scroll-orcamento-form">📋 Preencher Formulário</button>
     </div>
   `;
 
-  const thumbs = ['🪑', '📷', '🏠', '✨'].map((ic, i) => `
-    <div class="gallery-thumb${i === 0 ? ' active' : ''}" onclick="this.parentElement.querySelectorAll('.gallery-thumb').forEach(t=>t.classList.remove('active'));this.classList.add('active')">${ic}</div>
-  `).join('');
-  document.getElementById('galleryThumbs').innerHTML = thumbs;
+  const thumbs = ['🪑', '📷', '🏠', '✨']
+    .map(
+      (icon, index) =>
+        `<button class="gallery-thumb${index === 0 ? ' active' : ''}" type="button" data-action="gallery-thumb" aria-label="Visualização ${index + 1}">${icon}</button>`,
+    )
+    .join('');
+  $('galleryThumbs').innerHTML = thumbs;
 }
 
-function submitForm() {
-  const nome = document.getElementById('formNome')?.value.trim();
-  const tel = document.getElementById('formTel')?.value.trim();
-  if (!nome || !tel) { showToast('Preencha nome e telefone.', 'error'); return; }
-  const prodName = currentProduct ? currentProduct.name : 'produto';
-  const msg = `Olá, sou ${nome}. Gostaria de orçamento do produto: *${prodName}*. Telefone: ${tel}`;
-  document.getElementById('formSuccess')?.classList.remove('hidden');
-  showToast('Solicitação enviada via WhatsApp!', 'success');
-  window.open(`https://wa.me/${WPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-}
-
-function doLogin() {
-  const u = document.getElementById('loginUser')?.value;
-  const p = document.getElementById('loginPass')?.value;
-  const error = document.getElementById('loginError');
-  if (u === 'admin' && p === 'admin123') {
-    adminLoggedIn = true;
-    localStorage.setItem('mcp_admin', '1');
-    if (error) error.classList.add('hidden');
-    goTo('admin');
-  } else {
-    error?.classList.remove('hidden');
+function setFormFeedback({ successMessage = '', errorMessage = '' } = {}) {
+  const successEl = $('formSuccess');
+  const errorEl = $('formError');
+  if (successEl) {
+    successEl.textContent = successMessage;
+    successEl.classList.toggle('hidden', !successMessage);
+  }
+  if (errorEl) {
+    errorEl.textContent = errorMessage;
+    errorEl.classList.toggle('hidden', !errorMessage);
   }
 }
 
+function submitForm(event) {
+  event?.preventDefault();
+
+  const formData = {
+    nome: $('formNome')?.value.trim() || '',
+    tel: $('formTel')?.value.trim() || '',
+    email: $('formEmail')?.value.trim() || '',
+    cidade: $('formCidade')?.value.trim() || '',
+    msg: $('formMsg')?.value.trim() || '',
+  };
+
+  if (!formData.nome || formData.nome.length < 3) {
+    setFormFeedback({ errorMessage: 'Informe seu nome completo.' });
+    showToast('Revise os dados do formulário.', 'error');
+    return;
+  }
+
+  const numericPhone = formData.tel.replace(/\D/g, '');
+  if (numericPhone.length < 10) {
+    setFormFeedback({ errorMessage: 'Informe um telefone/WhatsApp válido com DDD.' });
+    showToast('Revise os dados do formulário.', 'error');
+    return;
+  }
+
+  const productName = state.currentProduct ? state.currentProduct.name : 'produto';
+  const messageLines = [
+    `Olá, sou ${formData.nome}.`,
+    `Gostaria de orçamento do produto: *${productName}*.`,
+    `Telefone: ${formData.tel}`,
+  ];
+  if (formData.email) messageLines.push(`E-mail: ${formData.email}`);
+  if (formData.cidade) messageLines.push(`Cidade: ${formData.cidade}`);
+  if (formData.msg) messageLines.push(`Observações: ${formData.msg}`);
+
+  setFormFeedback({ successMessage: 'Solicitação pronta! Vamos abrir o WhatsApp para envio.' });
+  showToast('Solicitação enviada via WhatsApp!', 'success');
+
+  window.open(
+    `https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(messageLines.join('\n'))}`,
+    '_blank',
+    'noopener',
+  );
+}
+
+function doLogin() {
+  state.adminLoggedIn = true;
+  localStorage.setItem(APP_CONFIG.localStorageKeys.adminDemoSession, '1');
+  $('loginNotice')?.classList.remove('hidden');
+  showToast('Entrando no painel DEMO local.', 'success');
+  goTo('admin');
+}
+
 function doLogout() {
-  adminLoggedIn = false;
-  localStorage.removeItem('mcp_admin');
+  state.adminLoggedIn = false;
+  localStorage.removeItem(APP_CONFIG.localStorageKeys.adminDemoSession);
+  showToast('Sessão DEMO encerrada.', '');
   goTo('home');
 }
 
 function adminTab(tab, el) {
-  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('admin-' + tab)?.classList.add('active');
+  document.querySelectorAll('.admin-section').forEach((s) => s.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach((n) => n.classList.remove('active'));
+  document.getElementById(`admin-${tab}`)?.classList.add('active');
   if (el) el.classList.add('active');
   if (tab === 'produtos') renderAdminProducts();
   if (tab === 'categorias') renderAdminCats();
@@ -235,152 +360,190 @@ function adminTab(tab, el) {
 }
 
 function renderAdminDashboard() {
-  const stats = document.getElementById('adminStats');
+  const stats = $('adminStats');
   if (stats) {
-    const total = products.length;
-    const disp = products.filter(p => p.disponivel).length;
-    const promo = products.filter(p => p.promo).length;
-    const novo = products.filter(p => p.novo).length;
+    const total = state.products.length;
+    const disp = state.products.filter((p) => p.disponivel).length;
+    const promo = state.products.filter((p) => p.promo).length;
+    const novo = state.products.filter((p) => p.novo).length;
     stats.innerHTML = `
       <div class="admin-stat-card"><div class="admin-stat-label">Total de produtos</div><div class="admin-stat-num">${total}</div><div class="admin-stat-sub">${disp} disponíveis</div></div>
       <div class="admin-stat-card"><div class="admin-stat-label">Promoções ativas</div><div class="admin-stat-num">${promo}</div><div class="admin-stat-sub">em promoção</div></div>
       <div class="admin-stat-card"><div class="admin-stat-label">Lançamentos</div><div class="admin-stat-num">${novo}</div><div class="admin-stat-sub">novos produtos</div></div>
-      <div class="admin-stat-card"><div class="admin-stat-label">Categorias</div><div class="admin-stat-num">${categories.length}</div><div class="admin-stat-sub">ativas</div></div>
+      <div class="admin-stat-card"><div class="admin-stat-label">Categorias</div><div class="admin-stat-num">${state.categories.length}</div><div class="admin-stat-sub">ativas</div></div>
     `;
   }
-  const recent = document.getElementById('recentProductsTable');
+
+  const recent = $('recentProductsTable');
   if (recent) {
-    const last5 = [...products].slice(-5).reverse();
-    recent.innerHTML = productsTableHTML(last5);
+    const last5 = [...state.products].slice(-5).reverse();
+    recent.innerHTML = productsTableHTML(last5, { adminContext: false });
   }
 }
 
 function renderAdminProducts() {
-  const q = (document.getElementById('adminSearch')?.value || '').toLowerCase();
-  const filtered = q ? products.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q)) : products;
-  const el = document.getElementById('adminProductsTable');
-  if (el) el.innerHTML = productsTableHTML(filtered);
+  const q = (($('adminSearch')?.value || '').trim()).toLowerCase();
+  const filtered = q
+    ? state.products.filter((p) => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q))
+    : state.products;
+  const el = $('adminProductsTable');
+  if (el) el.innerHTML = productsTableHTML(filtered, { adminContext: true });
 }
 
-function productsTableHTML(prods) {
-  if (!prods.length) return `<div class="admin-empty"><div class="admin-empty-icon">🪑</div><p>Nenhum produto encontrado.</p></div>`;
+function productsTableHTML(products, { adminContext }) {
+  if (!products.length) {
+    return '<div class="admin-empty"><div class="admin-empty-icon">🪑</div><p>Nenhum produto encontrado.</p></div>';
+  }
+
   return `<table class="admin-table">
-    <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Status</th><th>Ações</th></tr></thead>
+    <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Status</th>${adminContext ? '<th>Ações</th>' : ''}</tr></thead>
     <tbody>
-    ${prods.map(p => `<tr>
-      <td><strong>${p.name}</strong></td>
-      <td><span class="tag">${p.code}</span></td>
-      <td>${p.cat}</td>
-      <td>
-        ${p.disponivel ? '<span class="status-badge status-active">Disponível</span>' : '<span class="status-badge status-archived">Indisponível</span>'}
-        ${p.promo ? ' <span class="status-badge status-promo">Promo</span>' : ''}
-        ${p.novo ? ' <span class="status-badge status-new">Novo</span>' : ''}
-      </td>
-      <td>
-        <div class="admin-actions">
-          <div class="admin-btn-icon" title="Editar" onclick="editProduct(${p.id})">✏️</div>
-          <div class="admin-btn-icon" title="Duplicar" onclick="duplicateProduct(${p.id})">📋</div>
-          <div class="admin-btn-icon" title="Visualizar" onclick="currentProduct=products.find(x=>x.id===${p.id});goTo('product')">👁️</div>
-          <div class="admin-btn-icon danger" title="Excluir" onclick="deleteProduct(${p.id})">🗑️</div>
-        </div>
-      </td>
-    </tr>`).join('')}
+      ${products
+        .map((p) => {
+          const status = `
+            ${p.disponivel ? '<span class="status-badge status-active">Disponível</span>' : '<span class="status-badge status-archived">Indisponível</span>'}
+            ${p.promo ? ' <span class="status-badge status-promo">Promo</span>' : ''}
+            ${p.novo ? ' <span class="status-badge status-new">Novo</span>' : ''}
+          `;
+
+          const actions = adminContext
+            ? `<td>
+                <div class="admin-actions">
+                  <button class="admin-btn-icon" type="button" title="Editar" data-action="admin-edit-product" data-id="${p.id}">✏️</button>
+                  <button class="admin-btn-icon" type="button" title="Duplicar" data-action="admin-duplicate-product" data-id="${p.id}">📋</button>
+                  <button class="admin-btn-icon" type="button" title="Visualizar" data-action="admin-preview-product" data-id="${p.id}">👁️</button>
+                  <button class="admin-btn-icon danger" type="button" title="Excluir" data-action="admin-delete-product" data-id="${p.id}">🗑️</button>
+                </div>
+              </td>`
+            : '';
+
+          return `<tr>
+            <td><strong>${escapeHtml(p.name)}</strong></td>
+            <td><span class="tag">${escapeHtml(p.code)}</span></td>
+            <td>${escapeHtml(p.cat)}</td>
+            <td>${status}</td>
+            ${actions}
+          </tr>`;
+        })
+        .join('')}
     </tbody>
   </table>`;
 }
 
 function renderAdminCats() {
-  const el = document.getElementById('adminCatTable');
+  const el = $('adminCatTable');
   if (!el) return;
+
   el.innerHTML = `<table class="admin-table">
     <thead><tr><th>Ícone</th><th>Nome</th><th>Produtos</th><th>Ações</th></tr></thead>
     <tbody>
-    ${categories.map(c => `<tr>
-      <td style="font-size:1.5rem;">${c.icon}</td>
-      <td><strong>${c.name}</strong></td>
-      <td>${products.filter(p => p.cat === c.name).length}</td>
-      <td>
-        <div class="admin-actions">
-          <div class="admin-btn-icon" onclick="editCat(${c.id})">✏️</div>
-          <div class="admin-btn-icon danger" onclick="deleteCat(${c.id})">🗑️</div>
-        </div>
-      </td>
-    </tr>`).join('')}
+      ${state.categories
+        .map(
+          (c) => `<tr>
+            <td style="font-size:1.5rem;">${escapeHtml(c.icon)}</td>
+            <td><strong>${escapeHtml(c.name)}</strong></td>
+            <td>${state.products.filter((p) => p.cat === c.name).length}</td>
+            <td>
+              <div class="admin-actions">
+                <button class="admin-btn-icon" type="button" data-action="admin-edit-cat" data-id="${c.id}">✏️</button>
+                <button class="admin-btn-icon danger" type="button" data-action="admin-delete-cat" data-id="${c.id}">🗑️</button>
+              </div>
+            </td>
+          </tr>`,
+        )
+        .join('')}
     </tbody>
   </table>`;
 }
 
 function populatePmCat() {
-  const sel = document.getElementById('pm-cat');
-  if (sel) sel.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  const sel = $('pm-cat');
+  if (!sel) return;
+  sel.innerHTML = state.categories
+    .map((c) => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`)
+    .join('');
 }
 
 function openProductModal(id) {
-  editingProductId = id || null;
+  state.editingProductId = id || null;
   populatePmCat();
-  const modal = document.getElementById('productModalOverlay');
-  const title = document.getElementById('productModalTitle');
+  const modal = $('productModalOverlay');
+  const title = $('productModalTitle');
+
   if (id) {
-    const p = products.find(x => x.id === id);
+    const p = getProductById(id);
     if (!p) return;
     title.textContent = 'Editar Produto';
-    document.getElementById('pm-name').value = p.name;
-    document.getElementById('pm-code').value = p.code;
-    document.getElementById('pm-cat').value = p.cat;
-    document.getElementById('pm-mat').value = p.mat;
-    document.getElementById('pm-desc').value = p.desc;
-    document.getElementById('pm-med').value = p.med || '';
-    document.getElementById('pm-acab').value = p.acab || '';
-    document.getElementById('pm-cores').value = (p.cores || []).join(', ');
-    document.getElementById('pm-dest').checked = p.destaque;
-    document.getElementById('pm-promo').checked = p.promo;
-    document.getElementById('pm-new').checked = p.novo;
-    document.getElementById('pm-disp').checked = p.disponivel;
+    $('pm-name').value = p.name;
+    $('pm-code').value = p.code;
+    $('pm-cat').value = p.cat;
+    $('pm-mat').value = p.mat;
+    $('pm-desc').value = p.desc;
+    $('pm-med').value = p.med || '';
+    $('pm-acab').value = p.acab || '';
+    $('pm-cores').value = Array.isArray(p.cores) ? p.cores.join(', ') : '';
+    $('pm-dest').checked = !!p.destaque;
+    $('pm-promo').checked = !!p.promo;
+    $('pm-new').checked = !!p.novo;
+    $('pm-disp').checked = !!p.disponivel;
   } else {
     title.textContent = 'Novo Produto';
-    ['pm-name', 'pm-code', 'pm-desc', 'pm-med', 'pm-acab', 'pm-cores'].forEach(field => document.getElementById(field).value = '');
-    document.getElementById('pm-dest').checked = true;
-    document.getElementById('pm-promo').checked = false;
-    document.getElementById('pm-new').checked = false;
-    document.getElementById('pm-disp').checked = true;
+    ['pm-name', 'pm-code', 'pm-desc', 'pm-med', 'pm-acab', 'pm-cores'].forEach((field) => {
+      const input = $(field);
+      if (input) input.value = '';
+    });
+    $('pm-dest').checked = true;
+    $('pm-promo').checked = false;
+    $('pm-new').checked = false;
+    $('pm-disp').checked = true;
   }
-  modal.classList.add('open');
+
+  modal?.classList.add('open');
 }
 
 function closeProductModal() {
-  document.getElementById('productModalOverlay')?.classList.remove('open');
+  $('productModalOverlay')?.classList.remove('open');
 }
 
-function editProduct(id) { openProductModal(id); }
-
 function saveProduct() {
-  const name = document.getElementById('pm-name').value.trim();
-  const code = document.getElementById('pm-code').value.trim();
-  if (!name || !code) { showToast('Nome e código são obrigatórios.', 'error'); return; }
-  const cores = document.getElementById('pm-cores').value.split(',').map(s => s.trim()).filter(Boolean);
+  const name = $('pm-name').value.trim();
+  const code = $('pm-code').value.trim();
+  if (!name || !code) {
+    showToast('Nome e código são obrigatórios.', 'error');
+    return;
+  }
+
   const data = {
     name,
     code,
-    cat: document.getElementById('pm-cat').value,
-    mat: document.getElementById('pm-mat').value,
-    desc: document.getElementById('pm-desc').value,
-    med: document.getElementById('pm-med').value,
-    acab: document.getElementById('pm-acab').value,
-    cores,
-    destaque: document.getElementById('pm-dest').checked,
-    promo: document.getElementById('pm-promo').checked,
-    novo: document.getElementById('pm-new').checked,
-    disponivel: document.getElementById('pm-disp').checked,
+    cat: $('pm-cat').value,
+    mat: $('pm-mat').value,
+    desc: $('pm-desc').value,
+    med: $('pm-med').value,
+    acab: $('pm-acab').value,
+    cores: $('pm-cores')
+      .value
+      .split(',')
+      .map((s) => sanitizeColor(s.trim()))
+      .filter(Boolean),
+    destaque: $('pm-dest').checked,
+    promo: $('pm-promo').checked,
+    novo: $('pm-new').checked,
+    disponivel: $('pm-disp').checked,
   };
-  if (editingProductId) {
-    const idx = products.findIndex(p => p.id === editingProductId);
-    products[idx] = { ...products[idx], ...data };
-    showToast('Produto atualizado!', 'success');
+
+  if (state.editingProductId) {
+    const idx = state.products.findIndex((p) => p.id === state.editingProductId);
+    if (idx >= 0) {
+      state.products[idx] = { ...state.products[idx], ...data };
+      showToast('Produto atualizado!', 'success');
+    }
   } else {
     data.id = Date.now();
-    products.push(data);
+    state.products.push(data);
     showToast('Produto criado!', 'success');
   }
+
   saveData();
   closeProductModal();
   renderAdminProducts();
@@ -388,8 +551,8 @@ function saveProduct() {
 }
 
 function deleteProduct(id) {
-  if (!confirm('Excluir este produto?')) return;
-  products = products.filter(p => p.id !== id);
+  if (!window.confirm('Excluir este produto?')) return;
+  state.products = state.products.filter((p) => p.id !== Number(id));
   saveData();
   renderAdminProducts();
   renderAdminDashboard();
@@ -397,10 +560,10 @@ function deleteProduct(id) {
 }
 
 function duplicateProduct(id) {
-  const p = products.find(x => x.id === id);
+  const p = getProductById(id);
   if (!p) return;
-  const copy = { ...p, id: Date.now(), name: p.name + ' (Cópia)', code: p.code + '-C' };
-  products.push(copy);
+  const copy = { ...p, id: Date.now(), name: `${p.name} (Cópia)`, code: `${p.code}-C` };
+  state.products.push(copy);
   saveData();
   renderAdminProducts();
   renderAdminDashboard();
@@ -408,45 +571,50 @@ function duplicateProduct(id) {
 }
 
 function openCatModal(id) {
-  editingCatId = id || null;
-  const modal = document.getElementById('catModalOverlay');
+  state.editingCatId = id || null;
+  const modal = $('catModalOverlay');
+
   if (id) {
-    const c = categories.find(x => x.id === id);
+    const c = state.categories.find((cat) => cat.id === Number(id));
     if (!c) return;
-    document.getElementById('catModalTitle').textContent = 'Editar Categoria';
-    document.getElementById('cm-name').value = c.name;
-    document.getElementById('cm-icon').value = c.icon;
+    $('catModalTitle').textContent = 'Editar Categoria';
+    $('cm-name').value = c.name;
+    $('cm-icon').value = c.icon;
   } else {
-    document.getElementById('catModalTitle').textContent = 'Nova Categoria';
-    document.getElementById('cm-name').value = '';
-    document.getElementById('cm-icon').value = '';
+    $('catModalTitle').textContent = 'Nova Categoria';
+    $('cm-name').value = '';
+    $('cm-icon').value = '';
   }
-  modal.classList.add('open');
+
+  modal?.classList.add('open');
 }
 
 function closeCatModal() {
-  document.getElementById('catModalOverlay')?.classList.remove('open');
+  $('catModalOverlay')?.classList.remove('open');
 }
 
-function editCat(id) { openCatModal(id); }
-
 function saveCat() {
-  const name = document.getElementById('cm-name').value.trim();
-  if (!name) { showToast('Nome da categoria é obrigatório.', 'error'); return; }
-  const icon = document.getElementById('cm-icon').value || '🗂️';
-  if (editingCatId) {
-    const idx = categories.findIndex(c => c.id === editingCatId);
-    const previousName = categories[idx].name;
-    categories[idx].name = name;
-    categories[idx].icon = icon;
-    products.forEach(p => {
-      if (p.cat === previousName) p.cat = name;
-    });
-    showToast('Categoria atualizada!', 'success');
+  const name = $('cm-name').value.trim();
+  if (!name) {
+    showToast('Nome da categoria é obrigatório.', 'error');
+    return;
+  }
+
+  const icon = $('cm-icon').value.trim() || '🗂️';
+
+  if (state.editingCatId) {
+    const idx = state.categories.findIndex((c) => c.id === state.editingCatId);
+    if (idx >= 0) {
+      const previousName = state.categories[idx].name;
+      state.categories[idx] = { ...state.categories[idx], name, icon };
+      state.products = state.products.map((p) => (p.cat === previousName ? { ...p, cat: name } : p));
+      showToast('Categoria atualizada!', 'success');
+    }
   } else {
-    categories.push({ id: Date.now(), name, icon });
+    state.categories.push({ id: Date.now(), name, icon });
     showToast('Categoria criada!', 'success');
   }
+
   saveData();
   closeCatModal();
   renderAdminCats();
@@ -456,8 +624,8 @@ function saveCat() {
 }
 
 function deleteCat(id) {
-  if (!confirm('Excluir esta categoria?')) return;
-  categories = categories.filter(c => c.id !== id);
+  if (!window.confirm('Excluir esta categoria?')) return;
+  state.categories = state.categories.filter((c) => c.id !== Number(id));
   saveData();
   renderAdminCats();
   populatePmCat();
@@ -467,13 +635,156 @@ function deleteCat(id) {
 }
 
 function showToast(msg, type) {
-  const t = document.getElementById('toast');
+  const t = $('toast');
   if (!t) return;
   t.textContent = msg;
-  t.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  t.className = `toast${type ? ` ${type}` : ''} show`;
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
+function handleActionClick(target) {
+  const actionEl = target.closest('[data-action]');
+  if (!actionEl) return false;
+
+  const action = actionEl.dataset.action;
+  const id = actionEl.dataset.id || actionEl.dataset.productId;
+
+  if (action === 'toggle-mobile-menu') toggleMobileMenu();
+  if (action === 'close-mobile-menu') closeMobileMenu();
+  if (action === 'open-whatsapp') openWhatsApp();
+  if (action === 'open-whatsapp-product') {
+    const product = getProductById(id);
+    if (product) openWhatsApp(product.name);
+  }
+  if (action === 'open-product') openProduct(id);
+  if (action === 'scroll-orcamento-form') {
+    document.querySelector('.orcamento-form')?.scrollIntoView({ behavior: 'smooth' });
+  }
+  if (action === 'admin-login-demo') doLogin();
+  if (action === 'admin-logout') doLogout();
+  if (action === 'admin-open-product-modal') openProductModal();
+  if (action === 'admin-open-cat-modal') openCatModal();
+  if (action === 'admin-save-product') saveProduct();
+  if (action === 'admin-save-cat') saveCat();
+  if (action === 'admin-close-product-modal') closeProductModal();
+  if (action === 'admin-close-cat-modal') closeCatModal();
+  if (action === 'admin-config-save') showToast('Configuração apenas DEMO local. Use backend para persistência real.', '');
+  if (action === 'demo-upload') showToast('Upload disponível na versão com backend.', '');
+  if (action === 'admin-edit-product') openProductModal(id);
+  if (action === 'admin-duplicate-product') duplicateProduct(id);
+  if (action === 'admin-preview-product') openProduct(id);
+  if (action === 'admin-delete-product') deleteProduct(id);
+  if (action === 'admin-edit-cat') openCatModal(id);
+  if (action === 'admin-delete-cat') deleteCat(id);
+  if (action === 'gallery-thumb') {
+    actionEl.parentElement.querySelectorAll('.gallery-thumb').forEach((thumb) => thumb.classList.remove('active'));
+    actionEl.classList.add('active');
+  }
+  if (action === 'select-color') {
+    actionEl.parentElement.querySelectorAll('.color-dot').forEach((dot) => dot.classList.remove('active'));
+    actionEl.classList.add('active');
+  }
+
+  return true;
+}
+
+function initEventListeners() {
+  window.addEventListener('scroll', () => {
+    const navbar = $('navbar');
+    if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  document.addEventListener('click', (event) => {
+    if (handleActionClick(event.target)) return;
+
+    const navTarget = event.target.closest('[data-nav]');
+    if (navTarget) {
+      event.preventDefault();
+      goTo(navTarget.dataset.nav);
+      closeMobileMenu();
+      return;
+    }
+
+    const scrollTarget = event.target.closest('[data-scroll-target]');
+    if (scrollTarget) {
+      event.preventDefault();
+      scrollToSection(scrollTarget.dataset.scrollTarget);
+      closeMobileMenu();
+      return;
+    }
+
+    const filterTarget = event.target.closest('[data-filter-category]');
+    if (filterTarget) {
+      event.preventDefault();
+      filterCatalog(filterTarget.dataset.filterCategory);
+      return;
+    }
+
+    const productCard = event.target.closest('[data-open-product-id]');
+    if (productCard) {
+      if (event.target.closest('.product-card-actions')) return;
+      openProduct(productCard.dataset.openProductId);
+      return;
+    }
+
+    const adminTabTarget = event.target.closest('[data-admin-tab]');
+    if (adminTabTarget) {
+      adminTab(adminTabTarget.dataset.adminTab, adminTabTarget);
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeMobileMenu();
+      closeProductModal();
+      closeCatModal();
+    }
+
+    if (event.key === 'Enter') {
+      const card = event.target.closest('[data-open-product-id]');
+      if (card) {
+        openProduct(card.dataset.openProductId);
+      }
+    }
+  });
+
+  $('catalogSearch')?.addEventListener('input', renderCatalog);
+  $('filterCat')?.addEventListener('change', renderCatalog);
+  $('filterMat')?.addEventListener('change', renderCatalog);
+  $('filterDisp')?.addEventListener('change', renderCatalog);
+  $('adminSearch')?.addEventListener('input', renderAdminProducts);
+
+  $('budgetForm')?.addEventListener('submit', submitForm);
+  $('adminDemoLoginForm')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    doLogin();
+  });
+
+  $('productModalOverlay')?.addEventListener('click', (event) => {
+    if (event.target.id === 'productModalOverlay') closeProductModal();
+  });
+
+  $('catModalOverlay')?.addEventListener('click', (event) => {
+    if (event.target.id === 'catModalOverlay') closeCatModal();
+  });
+}
+
+function initStaticContent() {
+  const year = new Date().getFullYear();
+  document.querySelectorAll('[data-current-year]').forEach((el) => {
+    el.textContent = String(year);
+  });
+  document.querySelectorAll('[data-company-name]').forEach((el) => {
+    el.textContent = APP_CONFIG.companyName;
+  });
+  document.querySelectorAll('[data-company-whatsapp]').forEach((el) => {
+    el.textContent = APP_CONFIG.whatsappDisplay;
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  initStaticContent();
+  initEventListeners();
   goTo('home');
 });
