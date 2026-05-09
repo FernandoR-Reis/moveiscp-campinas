@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Móveis em Campinas e região. Guarda-roupas, armários, cômodas, racks e muito mais. Qualidade e atendimento personalizado. Solicite seu orçamento.">
+  <meta name="keywords" content="móveis em Campinas, loja de móveis Campinas, guarda-roupa Campinas, armário Campinas, móveis planejados Campinas">
+  <meta property="og:title" content="MóveisCP — Qualidade que transforma ambientes">
+  <meta property="og:description" content="Móveis com qualidade garantida para Campinas e região. Catálogo online, orçamento fácil.">
+  <title>MóveisCP — Móveis em Campinas e Região</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script defer src="assets/js/data.js"></script>
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" onclick="goTo('home')">Móveis<span>CP</span></a>
+    <ul class="nav-links">
+      <li><a onclick="goTo('home')">Início</a></li>
+      <li><a onclick="goTo('catalog')">Catálogo</a></li>
+      <li><a onclick="scrollToSection('diferencias')">Diferenciais</a></li>
+      <li><a onclick="scrollToSection('footer')">Contato</a></li>
+      <li><a class="nav-cta" onclick="openWhatsApp()">💬 WhatsApp</a></li>
+    </ul>
+    <button class="nav-mobile-btn" onclick="toggleMobileMenu()" id="mobileBtn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile-menu" id="mobileMenu">
+    <a onclick="goTo('home');closeMobileMenu()">Início</a>
+    <a onclick="goTo('catalog');closeMobileMenu()">Catálogo</a>
+    <a onclick="scrollToSection('diferencias');closeMobileMenu()">Diferenciais</a>
+    <a onclick="scrollToSection('footer');closeMobileMenu()">Contato</a>
+    <a onclick="openWhatsApp();closeMobileMenu()">💬 WhatsApp</a>
+  </div>
+</nav>
+
+<div id="page-home" class="page active">
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-accent"></div>
+    <div class="hero-content">
+      <div class="hero-text">
+        <div class="hero-badge anim-up delay-1">🏡 Campinas e Região</div>
+        <h1 class="hero-h1 anim-up delay-2">
+          Móveis que transformam<br><em>ambientes em lares</em>
+        </h1>
+        <p class="hero-desc anim-up delay-3">
+          Qualidade, acabamento e design para o seu espaço. Atendimento personalizado e entrega direta para Campinas e toda a região.
+        </p>
+        <div class="hero-btns anim-up delay-4">
+          <button class="btn btn-primary btn-lg" onclick="goTo('catalog')">🪑 Ver Catálogo</button>
+          <button class="btn btn-outline-white btn-lg" onclick="openWhatsApp()">💬 Solicitar Orçamento</button>
+        </div>
+        <div class="hero-stats anim-up delay-5">
+          <div>
+            <div class="hero-stat-num">500+</div>
+            <div class="hero-stat-label">Modelos disponíveis</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">8+</div>
+            <div class="hero-stat-label">Anos no mercado</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">100%</div>
+            <div class="hero-stat-label">Entrega garantida</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual anim-up delay-3">
+        <div class="hero-img-wrap">
+          <div class="hero-img-inner">
+            <div class="hero-placeholder-icon">🛋️</div>
+            <p style="color:rgba(44,39,32,0.4);font-size:0.875rem">Imagem de ambiente aqui</p>
+          </div>
+        </div>
+        <div class="hero-img-card">
+          <div class="hero-img-card-label">Produto em destaque</div>
+          <div class="hero-img-card-val">Guarda-Roupa 6 Portas</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--white);">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-label">Explore</span>
+        <h2 class="section-title">Nossas Categorias</h2>
+        <p class="section-sub">Do quarto à sala, temos o móvel certo para cada ambiente do seu lar.</p>
+      </div>
+      <div class="categories-grid" id="categoriesHome"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;">
+        <div>
+          <span class="section-label">Seleção Especial</span>
+          <h2 class="section-title">Produtos em Destaque</h2>
+        </div>
+        <button class="btn btn-outline" onclick="goTo('catalog')">Ver tudo →</button>
+      </div>
+      <div class="products-grid" id="featuredProducts"></div>
+    </div>
+  </section>
+
+  <section class="section" id="diferencias">
+    <div class="container">
+      <div class="section-head center">
+        <span class="section-label" style="color:#E8C48A;">Por que nos escolher</span>
+        <h2 class="section-title" style="color:var(--white);">Nossos Diferenciais</h2>
+        <p class="section-sub" style="color:rgba(255,255,255,0.55);margin:0 auto;">Comprometidos com a qualidade do seu lar e a facilidade do seu atendimento.</p>
+      </div>
+      <div class="diff-grid">
+        <div class="diff-card"><div class="diff-icon">👤</div><h3 class="diff-title">Atendimento Personalizado</h3><p class="diff-desc">Cada cliente é único. Nosso time orienta você na escolha certa para o seu espaço e orçamento.</p></div>
+        <div class="diff-card"><div class="diff-icon">🚚</div><h3 class="diff-title">Entrega em Campinas e Região</h3><p class="diff-desc">Cobrimos Campinas e toda a região metropolitana com agilidade e cuidado na entrega dos seus móveis.</p></div>
+        <div class="diff-card"><div class="diff-icon">✅</div><h3 class="diff-title">Qualidade Garantida</h3><p class="diff-desc">Trabalhamos com fornecedores selecionados e materiais duráveis. Qualidade em cada detalhe.</p></div>
+        <div class="diff-card"><div class="diff-icon">💬</div><h3 class="diff-title">Orçamento Fácil e Rápido</h3><p class="diff-desc">Solicite pelo WhatsApp ou pelo formulário. Resposta rápida, sem burocracia e sem compromisso.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--white);" id="como-funciona">
+    <div class="container">
+      <div class="section-head center">
+        <span class="section-label">Simples assim</span>
+        <h2 class="section-title">Como Funciona</h2>
+        <p class="section-sub">Da escolha à compra em 4 passos fáceis.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card"><div class="step-num">1</div><h3 class="step-title">Escolha</h3><p class="step-desc">Navegue pelo catálogo e encontre o móvel ideal para o seu ambiente.</p><span class="step-arrow">→</span></div>
+        <div class="step-card"><div class="step-num">2</div><h3 class="step-title">Solicite Orçamento</h3><p class="step-desc">Clique em "Solicitar Orçamento" e envie sua solicitação via WhatsApp ou formulário.</p><span class="step-arrow">→</span></div>
+        <div class="step-card"><div class="step-num">3</div><h3 class="step-title">Atendimento</h3><p class="step-desc">Nossa equipe entra em contato para tirar dúvidas e fechar os detalhes do pedido.</p><span class="step-arrow">→</span></div>
+        <div class="step-card"><div class="step-num">4</div><h3 class="step-title">Compra e Entrega</h3><p class="step-desc">Confirme o pedido e receba seu móvel com conforto e praticidade.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head center">
+        <span class="section-label">Clientes satisfeitos</span>
+        <h2 class="section-title">O que dizem sobre nós</h2>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card"><div class="testimonial-stars">★★★★★</div><p class="testimonial-text">"Comprei um guarda-roupa 6 portas e fiquei impressionada com a qualidade. Entrega no prazo, instalação rápida e acabamento impecável. Recomendo muito!"</p><div class="testimonial-author"><div class="testimonial-avatar">AM</div><div><div class="testimonial-name">Ana Maria S.</div><div class="testimonial-local">Campinas — Barão Geraldo</div></div></div></div>
+        <div class="testimonial-card"><div class="testimonial-stars">★★★★★</div><p class="testimonial-text">"Atendimento excelente desde o primeiro contato pelo WhatsApp. Explicaram tudo com clareza, o orçamento foi justo e o produto veio perfeito."</p><div class="testimonial-author"><div class="testimonial-avatar">RP</div><div><div class="testimonial-name">Ricardo P.</div><div class="testimonial-local">Campinas — Nova Odessa</div></div></div></div>
+        <div class="testimonial-card"><div class="testimonial-stars">★★★★★</div><p class="testimonial-text">"Armário de cozinha de altíssima qualidade. O catálogo online facilitou muito a escolha. Processo simples, entrega rápida. Nota 10!"</p><div class="testimonial-author"><div class="testimonial-avatar">CF</div><div><div class="testimonial-name">Carla F.</div><div class="testimonial-local">Sumaré</div></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta-section">
+    <div class="container">
+      <h2>Pronto para transformar seu espaço?</h2>
+      <p>Explore o catálogo completo ou entre em contato agora mesmo.</p>
+      <div class="cta-btns">
+        <button class="btn btn-white btn-lg" onclick="goTo('catalog')">🪑 Ver Catálogo Completo</button>
+        <button class="btn btn-outline-white btn-lg" onclick="openWhatsApp()">💬 Falar no WhatsApp</button>
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">Móveis<span>CP</span></div>
+        <p class="footer-desc">Móveis com qualidade e compromisso para Campinas e toda a região. Atendimento personalizado, orçamento fácil e entrega garantida.</p>
+        <div class="footer-contact-item"><span class="footer-contact-icon">📱</span><span>(19) 99999-9999</span></div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">💬</span><span>(19) 99999-9999 (WhatsApp)</span></div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">📍</span><span>Campinas — SP<br>Entregamos em toda a região</span></div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">🕐</span><span>Seg–Sex: 9h–18h<br>Sáb: 9h–13h</span></div>
+      </div>
+      <div>
+        <div class="footer-col-title">Catálogo</div>
+        <ul class="footer-links">
+          <li><a onclick="filterCatalog('Guarda-Roupas')">Guarda-Roupas</a></li>
+          <li><a onclick="filterCatalog('Armários')">Armários</a></li>
+          <li><a onclick="filterCatalog('Cômodas')">Cômodas</a></li>
+          <li><a onclick="filterCatalog('Racks')">Racks</a></li>
+          <li><a onclick="filterCatalog('Painéis')">Painéis</a></li>
+          <li><a onclick="filterCatalog('Mesas')">Mesas</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Promoções</div>
+        <ul class="footer-links">
+          <li><a onclick="filterCatalog('Promoções')">Ofertas Especiais</a></li>
+          <li><a onclick="filterCatalog('Lançamentos')">Lançamentos</a></li>
+          <li><a onclick="filterCatalog('Cabeceiras')">Cabeceiras</a></li>
+          <li><a onclick="openWhatsApp()">Solicitar Orçamento</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Atendimento</div>
+        <ul class="footer-links">
+          <li><a onclick="openWhatsApp()">💬 WhatsApp</a></li>
+          <li><a onclick="scrollToSection('como-funciona')">Como Funciona</a></li>
+          <li><a onclick="scrollToSection('diferencias')">Diferenciais</a></li>
+        </ul>
+        <div style="margin-top:24px;">
+          <button class="btn btn-wpp btn-sm btn-full" onclick="openWhatsApp()">💬 Fale Conosco</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 MóveisCP. Todos os direitos reservados.</span>
+      <span><a class="footer-admin-link" onclick="goTo('admin-login')">Área Administrativa</a></span>
+    </div>
+  </footer>
+</div>
+
+<div id="page-catalog" class="page">
+  <div class="catalog-header">
+    <span class="section-label" style="color:#E8C48A;">Catálogo Completo</span>
+    <h1>Nossos Produtos</h1>
+    <p>Encontre o móvel perfeito para cada ambiente do seu lar</p>
+  </div>
+
+  <div class="catalog-body">
+    <div class="catalog-toolbar">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="catalogSearch" placeholder="Buscar por nome ou código..." oninput="renderCatalog()">
+      </div>
+      <select class="filter-select" id="filterCat" onchange="renderCatalog()"><option value="">Todas as categorias</option></select>
+      <select class="filter-select" id="filterMat" onchange="renderCatalog()">
+        <option value="">Material</option>
+        <option value="MDP">MDP</option><option value="MDF">MDF</option><option value="Madeira">Madeira</option><option value="Metal">Metal</option>
+      </select>
+      <select class="filter-select" id="filterDisp" onchange="renderCatalog()">
+        <option value="">Disponibilidade</option>
+        <option value="disponivel">Disponível</option>
+        <option value="indisponivel">Fora de estoque</option>
+      </select>
+    </div>
+    <p class="catalog-results-info" id="catalogInfo"></p>
+    <div class="products-grid" id="catalogGrid"></div>
+  </div>
+
+  <footer id="footer-catalog" style="background:var(--dark);color:rgba(255,255,255,0.7);padding:28px 24px;text-align:center;font-size:0.875rem;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <span>© 2025 MóveisCP</span>
+      <button class="btn btn-wpp btn-sm" onclick="openWhatsApp()">💬 WhatsApp</button>
+      <a class="footer-admin-link" onclick="goTo('admin-login')">Área Administrativa</a>
+    </div>
+  </footer>
+</div>
+
+<div id="page-product" class="page">
+  <div class="product-detail-header">
+    <div class="breadcrumb">
+      <span onclick="goTo('home')">Início</span>
+      <span class="breadcrumb-sep">›</span>
+      <span onclick="goTo('catalog')">Catálogo</span>
+      <span class="breadcrumb-sep">›</span>
+      <span id="breadcrumb-product" style="color:rgba(255,255,255,0.8);">Produto</span>
+    </div>
+  </div>
+
+  <div class="product-detail-body">
+    <div class="product-gallery">
+      <div class="gallery-main" id="galleryMain">
+        <div class="gallery-main-placeholder">
+          <div class="gallery-icon">🪑</div>
+          <p>Foto do produto</p>
+        </div>
+      </div>
+      <div class="gallery-thumbs" id="galleryThumbs"></div>
+    </div>
+    <div class="product-info" id="productInfo"></div>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px 80px;">
+    <div class="orcamento-form">
+      <h3 class="form-title">Solicitar Orçamento</h3>
+      <p class="form-subtitle">Preencha o formulário e entraremos em contato rapidamente.</p>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome completo *</label><input type="text" class="form-input" id="formNome" placeholder="Seu nome"></div>
+        <div class="form-group"><label class="form-label">Telefone / WhatsApp *</label><input type="tel" class="form-input" id="formTel" placeholder="(19) 99999-9999"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="formEmail" placeholder="seu@email.com"></div>
+        <div class="form-group"><label class="form-label">Cidade</label><input type="text" class="form-input" id="formCidade" placeholder="Campinas"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Mensagem / Observações</label><textarea class="form-textarea" id="formMsg" rows="3" placeholder="Dúvidas, cores, medidas personalizadas..."></textarea></div>
+      <button class="btn btn-primary btn-full" onclick="submitForm()">Enviar Solicitação</button>
+      <div class="form-success hidden" id="formSuccess">✅ Solicitação enviada! Entraremos em contato em breve.</div>
+    </div>
+  </div>
+
+  <footer style="background:var(--dark);color:rgba(255,255,255,0.7);padding:28px 24px;text-align:center;font-size:0.875rem;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <span>© 2025 MóveisCP</span>
+      <button class="btn btn-wpp btn-sm" onclick="openWhatsApp()">💬 WhatsApp</button>
+      <a class="footer-admin-link" onclick="goTo('admin-login')">Área Administrativa</a>
+    </div>
+  </footer>
+</div>
+
+<div id="page-admin-login" class="page">
+  <div class="admin-login-page">
+    <div class="admin-login-card">
+      <div class="admin-logo">Móveis<span>CP</span></div>
+      <h2 class="admin-login-title">Área Administrativa</h2>
+      <p class="admin-login-sub">Acesso restrito a administradores.</p>
+      <div id="loginError" class="admin-login-error hidden">Usuário ou senha incorretos.</div>
+      <div class="form-group"><label class="form-label">Usuário</label><input type="text" class="form-input" id="loginUser" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:8px;">Entrar</button>
+      <p style="margin-top:16px;font-size:0.8rem;color:var(--light);text-align:center;">Demo: usuário <strong>admin</strong> / senha <strong>admin123</strong></p>
+      <button onclick="goTo('home')" class="btn btn-outline btn-full" style="margin-top:12px;">← Voltar ao site</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-admin" class="page">
+  <div class="admin-topbar">
+    <div class="admin-topbar-logo">Móveis<span>CP</span> <span style="font-size:0.75rem;font-weight:400;color:var(--light);font-family:var(--font-sans);"> — Painel Administrativo</span></div>
+    <div class="admin-topbar-right">
+      <span class="admin-user">👤 Administrador</span>
+      <button class="btn btn-outline btn-sm" onclick="goTo('home')">← Site</button>
+      <button class="btn btn-sm" style="color:var(--red);border:1px solid var(--border);" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div class="admin-sidebar-section">Principal</div>
+      <div class="admin-nav-item active" onclick="adminTab('dashboard')"><span class="admin-nav-icon">📊</span> Dashboard</div>
+      <div class="admin-nav-item" onclick="adminTab('produtos')"><span class="admin-nav-icon">🪑</span> Produtos</div>
+      <div class="admin-nav-item" onclick="adminTab('categorias')"><span class="admin-nav-icon">🗂️</span> Categorias</div>
+      <div class="admin-sidebar-section">Configurações</div>
+      <div class="admin-nav-item" onclick="adminTab('config')"><span class="admin-nav-icon">⚙️</span> Configurações</div>
+    </div>
+    <div class="admin-content">
+      <div class="admin-section active" id="admin-dashboard">
+        <h1 class="admin-page-title">Dashboard</h1>
+        <p class="admin-page-sub">Visão geral do catálogo</p>
+        <div class="admin-stats-grid" id="adminStats"></div>
+        <h3 style="font-size:1rem;font-weight:600;color:var(--dark);margin-bottom:16px;">Produtos recentes</h3>
+        <div id="recentProductsTable"></div>
+      </div>
+      <div class="admin-section" id="admin-produtos">
+        <h1 class="admin-page-title">Produtos</h1>
+        <p class="admin-page-sub">Gerencie todos os produtos do catálogo</p>
+        <div class="admin-toolbar">
+          <div class="search-input-wrap" style="min-width:200px;max-width:300px;"><span class="search-icon">🔍</span><input type="text" class="search-input" id="adminSearch" placeholder="Buscar produtos..." oninput="renderAdminProducts()"></div>
+          <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Novo Produto</button>
+        </div>
+        <div id="adminProductsTable"></div>
+      </div>
+      <div class="admin-section" id="admin-categorias">
+        <h1 class="admin-page-title">Categorias</h1>
+        <p class="admin-page-sub">Gerencie as categorias do catálogo</p>
+        <div class="admin-toolbar"><span></span><button class="btn btn-primary btn-sm" onclick="openCatModal()">+ Nova Categoria</button></div>
+        <div id="adminCatTable"></div>
+      </div>
+      <div class="admin-section" id="admin-config">
+        <h1 class="admin-page-title">Configurações</h1>
+        <p class="admin-page-sub">Dados da empresa e do site</p>
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:28px;max-width:600px;">
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Nome da empresa</label><input type="text" class="admin-form-input" value="MóveisCP"></div>
+            <div class="admin-form-group"><label class="admin-form-label">WhatsApp</label><input type="text" class="admin-form-input" value="5519999999999"></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Telefone</label><input type="text" class="admin-form-input" value="(19) 99999-9999"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Cidade</label><input type="text" class="admin-form-input" value="Campinas — SP"></div>
+          </div>
+          <div class="admin-form-group"><label class="admin-form-label">Endereço</label><input type="text" class="admin-form-input" value="Rua das Flores, 123 — Campinas/SP"></div>
+          <div class="admin-form-group"><label class="admin-form-label">Horário de atendimento</label><input type="text" class="admin-form-input" value="Seg–Sex: 9h–18h | Sáb: 9h–13h"></div>
+          <button class="btn btn-primary" onclick="showToast('Configurações salvas!','success')">Salvar alterações</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="productModalOverlay">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <h3 class="admin-modal-title" id="productModalTitle">Novo Produto</h3>
+      <div class="admin-modal-close" onclick="closeProductModal()">✕</div>
+    </div>
+    <div class="admin-form-row">
+      <div class="admin-form-group"><label class="admin-form-label">Nome do produto *</label><input type="text" class="admin-form-input" id="pm-name" placeholder="Ex: Guarda-Roupa Monaco 6 Portas"></div>
+      <div class="admin-form-group"><label class="admin-form-label">Código interno *</label><input type="text" class="admin-form-input" id="pm-code" placeholder="Ex: GR-001"></div>
+    </div>
+    <div class="admin-form-row">
+      <div class="admin-form-group"><label class="admin-form-label">Categoria *</label><select class="admin-form-select" id="pm-cat"></select></div>
+      <div class="admin-form-group"><label class="admin-form-label">Material</label><select class="admin-form-select" id="pm-mat"><option>MDP</option><option>MDF</option><option>Madeira</option><option>Metal</option><option>MDP/MDF</option></select></div>
+    </div>
+    <div class="admin-form-group"><label class="admin-form-label">Descrição comercial</label><textarea class="admin-form-textarea" id="pm-desc" rows="3" placeholder="Descreva o produto de forma comercial..."></textarea></div>
+    <div class="admin-form-row">
+      <div class="admin-form-group"><label class="admin-form-label">Medidas (L x A x P)</label><input type="text" class="admin-form-input" id="pm-med" placeholder="Ex: 220 x 200 x 60 cm"></div>
+      <div class="admin-form-group"><label class="admin-form-label">Acabamento</label><input type="text" class="admin-form-input" id="pm-acab" placeholder="Ex: Texturizado / Alto Brilho"></div>
+    </div>
+    <div class="admin-form-group"><label class="admin-form-label">Cores disponíveis (separadas por vírgula)</label><input type="text" class="admin-form-input" id="pm-cores" placeholder="Ex: Branco, Castanho, Grafite"></div>
+    <div class="admin-form-row">
+      <div class="admin-form-group" style="display:flex;align-items:center;gap:12px;padding-top:22px;"><label class="toggle-switch"><input type="checkbox" id="pm-dest" checked><span class="toggle-slider"></span></label><span class="admin-form-label" style="margin:0;">Produto em destaque</span></div>
+      <div class="admin-form-group" style="display:flex;align-items:center;gap:12px;padding-top:22px;"><label class="toggle-switch"><input type="checkbox" id="pm-promo"><span class="toggle-slider"></span></label><span class="admin-form-label" style="margin:0;">Em promoção</span></div>
+    </div>
+    <div class="admin-form-row">
+      <div class="admin-form-group" style="display:flex;align-items:center;gap:12px;padding-top:22px;"><label class="toggle-switch"><input type="checkbox" id="pm-new"><span class="toggle-slider"></span></label><span class="admin-form-label" style="margin:0;">Lançamento</span></div>
+      <div class="admin-form-group" style="display:flex;align-items:center;gap:12px;padding-top:22px;"><label class="toggle-switch"><input type="checkbox" id="pm-disp" checked><span class="toggle-slider"></span></label><span class="admin-form-label" style="margin:0;">Disponível</span></div>
+    </div>
+    <div class="admin-form-group" style="margin-top:8px;">
+      <label class="admin-form-label">Upload de imagens (simulado)</label>
+      <div class="upload-zone" onclick="showToast('Upload disponível na versão com backend','')">
+        <div class="upload-zone-icon">📷</div>
+        <div class="upload-zone-text">Clique para fazer upload das fotos do produto</div>
+      </div>
+    </div>
+    <div class="admin-modal-footer"><button class="btn btn-outline btn-sm" onclick="closeProductModal()">Cancelar</button><button class="btn btn-primary btn-sm" onclick="saveProduct()">Salvar Produto</button></div>
+  </div>
+</div>
+
+<div class="admin-modal-overlay" id="catModalOverlay">
+  <div class="admin-modal" style="max-width:440px;">
+    <div class="admin-modal-header">
+      <h3 class="admin-modal-title" id="catModalTitle">Nova Categoria</h3>
+      <div class="admin-modal-close" onclick="closeCatModal()">✕</div>
+    </div>
+    <div class="admin-form-group"><label class="admin-form-label">Nome da categoria *</label><input type="text" class="admin-form-input" id="cm-name" placeholder="Ex: Armários de Cozinha"></div>
+    <div class="admin-form-group"><label class="admin-form-label">Ícone (emoji)</label><input type="text" class="admin-form-input" id="cm-icon" placeholder="Ex: 🪑"></div>
+    <div class="admin-modal-footer"><button class="btn btn-outline btn-sm" onclick="closeCatModal()">Cancelar</button><button class="btn btn-primary btn-sm" onclick="saveCat()">Salvar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ Ação realizada!</div>
+
+</body>
+</html>

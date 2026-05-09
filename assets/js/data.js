@@ -1,0 +1,34 @@
+const WPP_NUMBER = '5519999999999';
+
+let categories = JSON.parse(localStorage.getItem('mcp_cats') || 'null') || [
+  { id: 1, name: 'Guarda-Roupas', icon: '🚪' },
+  { id: 2, name: 'Armários', icon: '🗄️' },
+  { id: 3, name: 'Cômodas', icon: '🪞' },
+  { id: 4, name: 'Racks', icon: '📺' },
+  { id: 5, name: 'Painéis', icon: '🖼️' },
+  { id: 6, name: 'Cabeceiras', icon: '🛏️' },
+  { id: 7, name: 'Mesas', icon: '🍽️' },
+  { id: 8, name: 'Promoções', icon: '🏷️' },
+  { id: 9, name: 'Lançamentos', icon: '✨' },
+];
+
+let products = JSON.parse(localStorage.getItem('mcp_prods') || 'null') || [
+  { id: 1, name: 'Guarda-Roupa Monaco 6 Portas', code: 'GR-001', cat: 'Guarda-Roupas', mat: 'MDP', desc: 'Guarda-roupa com amplo espaço interno, portas com espelho central e acabamento texturizado de alta qualidade. Ideal para quartos de casal.', med: '220 x 200 x 52 cm', acab: 'Texturizado', cores: ['#FFFFFF', '#4A3728', '#2C2C2C'], disponivel: true, destaque: true, promo: false, novo: false },
+  { id: 2, name: 'Armário Multiuso Toledo', code: 'AR-015', cat: 'Armários', mat: 'MDF', desc: 'Armário versátil com múltiplas prateleiras e gavetas. Perfeito para sala, quarto ou escritório. Design moderno e funcional.', med: '120 x 180 x 40 cm', acab: 'Alto Brilho', cores: ['#FFFFFF', '#C4965A'], disponivel: true, destaque: true, promo: false, novo: true },
+  { id: 3, name: 'Cômoda Veneza 5 Gavetas', code: 'CO-008', cat: 'Cômodas', mat: 'MDP', desc: 'Cômoda elegante com 5 gavetas espaçosas. Trilhos com amortecedor para fechamento suave. Ideal para quartos.', med: '100 x 90 x 45 cm', acab: 'Brilhante', cores: ['#FFFFFF', '#F5F0E8', '#4A3728'], disponivel: true, destaque: false, promo: true, novo: false },
+  { id: 4, name: 'Rack Florença 1,8m', code: 'RK-004', cat: 'Racks', mat: 'MDF', desc: 'Rack para TV até 75" com nichos organizados e passagem de cabos. Design limpo e contemporâneo que valoriza qualquer sala.', med: '180 x 55 x 40 cm', acab: 'Texturizado', cores: ['#2C2C2C', '#FFFFFF'], disponivel: true, destaque: true, promo: false, novo: false },
+  { id: 5, name: 'Painel Madri com Lareira', code: 'PN-022', cat: 'Painéis', mat: 'MDP', desc: 'Painel decorativo para sala com lareira elétrica embutida, nichos para TV e porta objetos. Transforma completamente o ambiente.', med: '240 x 210 x 30 cm', acab: 'Amadeirado', cores: ['#4A3728', '#2C2C2C'], disponivel: true, destaque: true, promo: false, novo: true },
+  { id: 6, name: 'Cabeceira Lisboa Estofada', code: 'CB-011', cat: 'Cabeceiras', mat: 'MDF', desc: 'Cabeceira com estofamento em tecido suede, acabamento capitonê e pés metálicos. Elegância e conforto para o quarto.', med: '160 x 120 cm (casal)', acab: 'Suede', cores: ['#C4965A', '#808080', '#FFFFFF'], disponivel: true, destaque: false, promo: true, novo: false },
+  { id: 7, name: 'Mesa de Jantar Roma 6 Lugares', code: 'MJ-007', cat: 'Mesas', mat: 'Madeira', desc: 'Mesa de jantar em madeira maciça com tampo robusto e design rústico contemporâneo. Comporta 6 pessoas com conforto.', med: '180 x 90 x 76 cm', acab: 'Natural envernizado', cores: ['#6B4226', '#2C2720'], disponivel: false, destaque: false, promo: false, novo: false },
+  { id: 8, name: 'Guarda-Roupa Slide Premium', code: 'GR-019', cat: 'Guarda-Roupas', mat: 'MDF', desc: 'Guarda-roupa com portas de correr em vidro fumê, cabideiro interno duplo e sistema de iluminação LED incluso. Sofisticação máxima.', med: '240 x 210 x 60 cm', acab: 'Vidro fumê / Lacado', cores: ['#FFFFFF', '#C0C0C0'], disponivel: true, destaque: false, promo: false, novo: true },
+];
+
+let currentProduct = null;
+let editingProductId = null;
+let editingCatId = null;
+let adminLoggedIn = localStorage.getItem('mcp_admin') === '1';
+
+function saveData() {
+  localStorage.setItem('mcp_cats', JSON.stringify(categories));
+  localStorage.setItem('mcp_prods', JSON.stringify(products));
+}
