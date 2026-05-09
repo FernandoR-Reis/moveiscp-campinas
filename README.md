@@ -1,33 +1,26 @@
 # MóveisCP
 
-Site institucional e catálogo online para loja de móveis, agora com backend provisório em Node.js e banco de dados em JSON.
+Site institucional e catálogo online para loja de móveis, publicado de forma estática no GitHub Pages.
 
 ## Estrutura
 - `index.html` — páginas e marcação
 - `assets/css/styles.css` — estilos
-- `assets/js/data.js` — dados iniciais e fallback local
-- `assets/js/app.js` — lógica de interface e integração com API
-- `server.js` — backend provisório
-- `db.json` — banco provisório em JSON
+- `assets/js/data.js` — dados iniciais
+- `assets/js/app.js` — lógica de interface
 
-## Como rodar o backend
-1. Instale as dependências:
-   - `npm install`
-2. Inicie o servidor:
-   - `npm start`
-3. Acesse:
-   - `http://localhost:3001`
+## Banco de dados provisório
+O projeto usa `localStorage` como banco provisório no navegador:
+- categorias em `mcp_cats`
+- produtos em `mcp_prods`
 
-## API disponível
-- `GET /api/health`
-- `GET /api/state`
-- `PUT /api/state`
+Isso permite cadastro/edição no painel admin sem backend.
 
-## Como rodar sem backend
-Abra `index.html` no navegador. O site usa fallback com `localStorage` se a API não estiver disponível.
+## Como rodar localmente
+Abra `index.html` no navegador.
 
-## Publicar no GitHub Pages
-O GitHub Pages publica apenas o front-end. Para manter backend e banco online, será necessário hospedar o servidor em outro serviço, como Render, Railway, Fly.io ou VPS.
+## Domínio no GitHub
+Site online no domínio provisório do GitHub Pages:
+https://fernandor-reis.github.io/moveiscp-campinas/
 
 ## Observação
-O banco `db.json` é provisório e serve para desenvolvimento e demonstração. Para produção, o ideal é migrar para PostgreSQL, MySQL ou Prisma com banco gerenciado.
+As alterações salvas no painel admin ficam no navegador do usuário (localStorage). Para ambiente real com dados compartilhados, será necessário backend e banco gerenciado.
