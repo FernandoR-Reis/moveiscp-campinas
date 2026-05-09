@@ -1,28 +1,33 @@
 # MóveisCP
 
-Site institucional e catálogo online para loja de móveis, com páginas de catálogo, produto, formulário e painel administrativo demonstrativo.
+Site institucional e catálogo online para loja de móveis, agora com backend provisório em Node.js e banco de dados em JSON.
 
 ## Estrutura
 - `index.html` — páginas e marcação
 - `assets/css/styles.css` — estilos
-- `assets/js/data.js` — dados e persistência local
-- `assets/js/app.js` — lógica de interface
+- `assets/js/data.js` — dados iniciais e fallback local
+- `assets/js/app.js` — lógica de interface e integração com API
+- `server.js` — backend provisório
+- `db.json` — banco provisório em JSON
 
-## Como rodar
-Abra `index.html` no navegador ou use uma extensão de servidor local no VS Code.
+## Como rodar o backend
+1. Instale as dependências:
+   - `npm install`
+2. Inicie o servidor:
+   - `npm start`
+3. Acesse:
+   - `http://localhost:3001`
+
+## API disponível
+- `GET /api/health`
+- `GET /api/state`
+- `PUT /api/state`
+
+## Como rodar sem backend
+Abra `index.html` no navegador. O site usa fallback com `localStorage` se a API não estiver disponível.
 
 ## Publicar no GitHub Pages
-1. Crie um repositório no GitHub.
-2. Envie estes arquivos para a branch principal.
-3. Vá em Settings > Pages.
-4. Em Build and deployment, selecione:
-   - Source: Deploy from a branch
-   - Branch: `main`
-   - Folder: `/ (root)`
-5. Salve e aguarde a URL do GitHub Pages.
-
-O endereço normalmente fica no formato:
-`https://seu-usuario.github.io/nome-do-repositorio/`
+O GitHub Pages publica apenas o front-end. Para manter backend e banco online, será necessário hospedar o servidor em outro serviço, como Render, Railway, Fly.io ou VPS.
 
 ## Observação
-O painel administrativo e os dados usam `localStorage`. Isso funciona bem para demonstração, mas para produção real será necessário um backend.
+O banco `db.json` é provisório e serve para desenvolvimento e demonstração. Para produção, o ideal é migrar para PostgreSQL, MySQL ou Prisma com banco gerenciado.

@@ -6,6 +6,42 @@ let adminLoggedIn = localStorage.getItem('mcp_admin') === '1';
 function saveData() {
   localStorage.setItem('mcp_cats', JSON.stringify(categories));
   localStorage.setItem('mcp_prods', JSON.stringify(products));
+  void persistData();
+}
+
+async function persistData() {
+  try {
+    await fetch('/api/state', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categories, products }),
+    });
+  } catch (error) {
+    console.warn('Backend indisponível, usando localStorage.', error);
+  }
+}
+
+async function loadData() {
+  try {
+    const response = await fetch('/api/state', { cache: 'no-store' });
+    if (response.ok) {
+      const state = await response.json();
+      if (Array.isArray(state.categories) && Array.isArray(state.products)) {
+        categories = state.categories;
+        products = state.products;
+        localStorage.setItem('mcp_cats', JSON.stringify(categories));
+        localStorage.setItem('mcp_prods', JSON.stringify(products));
+        return;
+      }
+    }
+  } catch (error) {
+    console.warn('Falha ao carregar do backend, usando localStorage.', error);
+  }
+
+  const cachedCats = localStorage.getItem('mcp_cats');
+  const cachedProds = localStorage.getItem('mcp_prods');
+  if (cachedCats) categories = JSON.parse(cachedCats);
+  if (cachedProds) products = JSON.parse(cachedProds);
 }
 
 function goTo(page) {
@@ -474,6 +510,7 @@ function showToast(msg, type) {
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadData();
   goTo('home');
 });
