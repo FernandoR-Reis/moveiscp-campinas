@@ -621,6 +621,10 @@ input, select, textarea { font-family: var(--font-sans); }
   font-size: 0.875rem;
   margin-top: 16px;
 }
+.form-error::before {
+  content: '⚠️ ';
+  font-size: 0.9rem;
+}
 @media (max-width: 768px) {
   .product-detail-body { grid-template-columns: 1fr; gap: 32px; }
   .form-row { grid-template-columns: 1fr; }

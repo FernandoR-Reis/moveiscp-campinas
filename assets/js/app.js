@@ -6,11 +6,13 @@ const state = {
   editingCatId: null,
   adminLoggedIn: localStorage.getItem(APP_CONFIG.localStorageKeys.adminDemoSession) === '1',
 };
+const DEFAULT_FALLBACK_COLOR = '#CCCCCC';
 
 const $ = (id) => document.getElementById(id);
 
 function escapeHtml(value) {
   return String(value ?? '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -20,7 +22,7 @@ function escapeHtml(value) {
 
 function sanitizeColor(value) {
   const color = String(value || '').trim();
-  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color) ? color : '#CCCCCC';
+  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color) ? color : '';
 }
 
 function cloneItems(items) {
@@ -109,7 +111,7 @@ function openWhatsApp(productName) {
   const message = productName
     ? `Olá, gostaria de orçamento do produto: *${productName}*`
     : 'Olá, gostaria de informações e orçamento sobre os móveis disponíveis.';
-  window.open(`https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+  window.open(`https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
 }
 
 function getProductById(id) {
@@ -237,7 +239,7 @@ function renderProductDetail() {
 
   const colors = (Array.isArray(p.cores) ? p.cores : [])
     .map((color, index) => {
-      const safeColor = sanitizeColor(color);
+      const safeColor = sanitizeColor(color) || DEFAULT_FALLBACK_COLOR;
       const isActive = index === 0 ? ' active' : '';
       return `<button class="color-dot${isActive}" type="button" style="background:${safeColor}" title="Cor ${safeColor}" data-action="select-color" aria-label="Selecionar cor ${safeColor}"></button>`;
     })
@@ -302,14 +304,19 @@ function submitForm(event) {
   };
 
   if (!formData.nome || formData.nome.length < 3) {
-    setFormFeedback({ errorMessage: 'Informe seu nome completo.' });
+    setFormFeedback({ errorMessage: 'O nome deve ter pelo menos 3 caracteres.' });
+    $('formNome')?.focus();
     showToast('Revise os dados do formulário.', 'error');
     return;
   }
 
+  // Formato brasileiro:
+  // - 10 dígitos => DDD (2) + telefone fixo (8)
+  // - 11 dígitos => DDD (2) + celular (9)
   const numericPhone = formData.tel.replace(/\D/g, '');
-  if (numericPhone.length < 10) {
+  if (!/^\d{10,11}$/.test(numericPhone)) {
     setFormFeedback({ errorMessage: 'Informe um telefone/WhatsApp válido com DDD.' });
+    $('formTel')?.focus();
     showToast('Revise os dados do formulário.', 'error');
     return;
   }
@@ -330,7 +337,7 @@ function submitForm(event) {
   window.open(
     `https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(messageLines.join('\n'))}`,
     '_blank',
-    'noopener',
+    'noopener,noreferrer',
   );
 }
 
@@ -377,7 +384,7 @@ function renderAdminDashboard() {
   const recent = $('recentProductsTable');
   if (recent) {
     const last5 = [...state.products].slice(-5).reverse();
-    recent.innerHTML = productsTableHTML(last5, { adminContext: false });
+    recent.innerHTML = productsTableHTML(last5, { showActions: false });
   }
 }
 
@@ -387,16 +394,16 @@ function renderAdminProducts() {
     ? state.products.filter((p) => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q))
     : state.products;
   const el = $('adminProductsTable');
-  if (el) el.innerHTML = productsTableHTML(filtered, { adminContext: true });
+  if (el) el.innerHTML = productsTableHTML(filtered, { showActions: true });
 }
 
-function productsTableHTML(products, { adminContext }) {
+function productsTableHTML(products, { showActions }) {
   if (!products.length) {
     return '<div class="admin-empty"><div class="admin-empty-icon">🪑</div><p>Nenhum produto encontrado.</p></div>';
   }
 
   return `<table class="admin-table">
-    <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Status</th>${adminContext ? '<th>Ações</th>' : ''}</tr></thead>
+    <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Status</th>${showActions ? '<th>Ações</th>' : ''}</tr></thead>
     <tbody>
       ${products
         .map((p) => {
@@ -406,7 +413,7 @@ function productsTableHTML(products, { adminContext }) {
             ${p.novo ? ' <span class="status-badge status-new">Novo</span>' : ''}
           `;
 
-          const actions = adminContext
+          const actions = showActions
             ? `<td>
                 <div class="admin-actions">
                   <button class="admin-btn-icon" type="button" title="Editar" data-action="admin-edit-product" data-id="${p.id}">✏️</button>
@@ -513,6 +520,17 @@ function saveProduct() {
     return;
   }
 
+  const rawColors = $('pm-cores')
+    .value
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const colors = rawColors.map((color) => sanitizeColor(color)).filter(Boolean);
+  if (rawColors.length !== colors.length) {
+    showToast('Use cores válidas no formato hexadecimal (#RRGGBB).', 'error');
+    return;
+  }
+
   const data = {
     name,
     code,
@@ -521,11 +539,7 @@ function saveProduct() {
     desc: $('pm-desc').value,
     med: $('pm-med').value,
     acab: $('pm-acab').value,
-    cores: $('pm-cores')
-      .value
-      .split(',')
-      .map((s) => sanitizeColor(s.trim()))
-      .filter(Boolean),
+    cores: colors,
     destaque: $('pm-dest').checked,
     promo: $('pm-promo').checked,
     novo: $('pm-new').checked,
@@ -551,8 +565,10 @@ function saveProduct() {
 }
 
 function deleteProduct(id) {
-  if (!window.confirm('Excluir este produto?')) return;
-  state.products = state.products.filter((p) => p.id !== Number(id));
+  const product = getProductById(id);
+  if (!product) return;
+  if (!window.confirm(`Excluir o produto "${product.name}"?`)) return;
+  state.products = state.products.filter((p) => p.id !== product.id);
   saveData();
   renderAdminProducts();
   renderAdminDashboard();
@@ -624,8 +640,10 @@ function saveCat() {
 }
 
 function deleteCat(id) {
-  if (!window.confirm('Excluir esta categoria?')) return;
-  state.categories = state.categories.filter((c) => c.id !== Number(id));
+  const category = state.categories.find((c) => c.id === Number(id));
+  if (!category) return;
+  if (!window.confirm(`Excluir a categoria "${category.name}"?`)) return;
+  state.categories = state.categories.filter((c) => c.id !== category.id);
   saveData();
   renderAdminCats();
   populatePmCat();
@@ -668,7 +686,7 @@ function handleActionClick(target) {
   if (action === 'admin-save-cat') saveCat();
   if (action === 'admin-close-product-modal') closeProductModal();
   if (action === 'admin-close-cat-modal') closeCatModal();
-  if (action === 'admin-config-save') showToast('Configuração apenas DEMO local. Use backend para persistência real.', '');
+  if (action === 'admin-config-save') showToast('Salvo localmente (demo).', '');
   if (action === 'demo-upload') showToast('Upload disponível na versão com backend.', '');
   if (action === 'admin-edit-product') openProductModal(id);
   if (action === 'admin-duplicate-product') duplicateProduct(id);
@@ -779,6 +797,9 @@ function initStaticContent() {
   });
   document.querySelectorAll('[data-company-whatsapp]').forEach((el) => {
     el.textContent = APP_CONFIG.whatsappDisplay;
+  });
+  document.querySelectorAll('[data-company-whatsapp-label]').forEach((el) => {
+    el.textContent = `${APP_CONFIG.whatsappDisplay} (WhatsApp)`;
   });
 }
 

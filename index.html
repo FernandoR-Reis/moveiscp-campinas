@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MóveisCP | Loja de móveis em Campinas e região</title>
+  <title>MóveisCP — Loja de móveis em Campinas e região</title>
   <meta name="description" content="MóveisCP: catálogo online de móveis em Campinas e região. Guarda-roupas, armários, racks e mais, com atendimento rápido via WhatsApp.">
   <link rel="canonical" href="https://fernandor-reis.github.io/moveiscp-campinas/">
   <meta property="og:type" content="website">
@@ -197,7 +197,7 @@
         <div class="footer-logo">Móveis<span>CP</span></div>
         <p class="footer-desc">Móveis com qualidade e compromisso para Campinas e toda a região. Atendimento personalizado, orçamento fácil e entrega garantida.</p>
         <div class="footer-contact-item"><span class="footer-contact-icon">📱</span><span data-company-whatsapp>(19) 99999-9999</span></div>
-        <div class="footer-contact-item"><span class="footer-contact-icon">💬</span><span><span data-company-whatsapp>(19) 99999-9999</span> (WhatsApp)</span></div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">💬</span><span data-company-whatsapp-label>(19) 99999-9999 (WhatsApp)</span></div>
         <div class="footer-contact-item"><span class="footer-contact-icon">📍</span><span>Campinas — SP<br>Entregamos em toda a região</span></div>
         <div class="footer-contact-item"><span class="footer-contact-icon">🕐</span><span>Seg–Sex: 9h–18h<br>Sáb: 9h–13h</span></div>
       </div>
@@ -252,7 +252,7 @@
     <div class="catalog-toolbar">
       <div class="search-input-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="catalogSearch" placeholder="Buscar por nome ou código..." name="catalogSearch" autocomplete="off" inputmode="search" aria-label="Buscar produtos por nome ou código">
+        <input type="text" class="search-input" id="catalogSearch" placeholder="Buscar por nome ou código..." name="catalogSearch" autocomplete="off" inputmode="text" aria-label="Buscar produtos por nome ou código">
       </div>
       <select class="filter-select" id="filterCat" name="filterCat" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
       <select class="filter-select" id="filterMat" name="filterMat" aria-label="Filtrar por material">
@@ -307,16 +307,16 @@
       <h3 class="form-title">Solicitar Orçamento</h3>
       <p class="form-subtitle">Preencha o formulário e entraremos em contato rapidamente.</p>
       <div class="form-row">
-        <div class="form-group"><label class="form-label" for="formNome">Nome completo *</label><input type="text" class="form-input" id="formNome" name="nome" placeholder="Seu nome" required autocomplete="name"></div>
-        <div class="form-group"><label class="form-label" for="formTel">Telefone / WhatsApp *</label><input type="tel" class="form-input" id="formTel" name="telefone" placeholder="(19) 99999-9999" required autocomplete="tel" inputmode="tel"></div>
+        <div class="form-group"><label class="form-label" for="formNome">Nome completo *</label><input type="text" class="form-input" id="formNome" name="nome" placeholder="Seu nome" required aria-required="true" aria-describedby="formError" autocomplete="name"></div>
+        <div class="form-group"><label class="form-label" for="formTel">Telefone / WhatsApp *</label><input type="tel" class="form-input" id="formTel" name="telefone" placeholder="(19) 99999-9999" required aria-required="true" aria-describedby="formError" autocomplete="tel" inputmode="tel"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label" for="formEmail">E-mail</label><input type="email" class="form-input" id="formEmail" name="email" placeholder="seu@email.com" autocomplete="email" inputmode="email"></div>
+        <div class="form-group"><label class="form-label" for="formEmail">E-mail</label><input type="email" class="form-input" id="formEmail" name="email" placeholder="seu@email.com" aria-describedby="formError" autocomplete="email" inputmode="email"></div>
         <div class="form-group"><label class="form-label" for="formCidade">Cidade</label><input type="text" class="form-input" id="formCidade" name="cidade" placeholder="Campinas" autocomplete="address-level2"></div>
       </div>
       <div class="form-group"><label class="form-label" for="formMsg">Mensagem / Observações</label><textarea class="form-textarea" id="formMsg" name="mensagem" rows="3" placeholder="Dúvidas, cores, medidas personalizadas..."></textarea></div>
       <button class="btn btn-primary btn-full" type="submit">Enviar Solicitação</button>
-      <div class="form-error hidden" id="formError" role="alert" aria-live="assertive"></div>
+      <div class="form-error hidden" id="formError" role="alert" aria-live="polite"></div>
       <div class="form-success hidden" id="formSuccess" role="status" aria-live="polite">✅ Solicitação enviada! Entraremos em contato em breve.</div>
     </form>
   </div>
